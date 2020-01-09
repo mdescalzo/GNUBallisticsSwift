@@ -1,3 +1,11 @@
+//
+// GNU Ballistics Library
+// Originally created by Derek Yates
+// Swift port by Mark Descalzo
+//
+// Available under the GNU GPL 2.0
+//
+
 import Foundation
 
 struct Solution {
@@ -11,7 +19,7 @@ struct Solution {
     let velocityY: Double // velocity on Y-axis
 }
 
-class GNUBallisticsSwift {
+open class GNUBallisticsSwift {
     
     let kMaxRange: Double = 50001
     let kGravity: Double = -32.194
@@ -26,7 +34,7 @@ class GNUBallisticsSwift {
     /**
      Integer representation of the drag function.  G3 and G4 are undefined placeholders.
      */
-    enum DragFunction: Int {
+    public enum DragFunction: Int {
         case G1=1,
         G2,
         G3, // Undefined
@@ -41,13 +49,13 @@ class GNUBallisticsSwift {
      Calculates ballistic retardation values based on standard drag functions.
      
      - Parameters:
-     - dragFunction: G1, G2, G3, G4, G5, G6, G7, or G8. Enumerated in DragFunction
-     - dragCoefficient:  The coefficient of drag for the projectile for the given drag function.
-     - velocity: The Velocity of the projectile.
+        - dragFunction: G1, G2, G3, G4, G5, G6, G7, or G8. Enumerated in DragFunction
+        - dragCoefficient:  The coefficient of drag for the projectile for the given drag function.
+        - velocity: The Velocity of the projectile.
      - Returns:
      The projectile drag retardation velocity, in ft/s per second.
      */
-    func retard(dragFunction: DragFunction, dragCoefficient: Double, velocity: Double) -> Double {
+    open func retard(dragFunction: DragFunction, dragCoefficient: Double, velocity: Double) -> Double {
         
         let vp: Double = velocity
         var val: Double = -1
@@ -317,19 +325,15 @@ class GNUBallisticsSwift {
      Corrects a "standard" Drag Coefficient for differing atmospheric conditions.
      
      - Parameters:
-     - dragCoefficiant: blah
-     - dragCoefficient:  The coefficient of drag for a given projectile.
-     - altitude:  The altitude above sea level in feet.  Standard altitude is 0 feet above sea level.
-     - barometer:  The barometric pressure in inches of mercury (in Hg).
-     This is not "absolute" pressure, it is the "standardized" pressure reported in the papers and news.
-     Standard pressure is 29.53 in Hg.
-     - temperature:  The temperature in Fahrenheit.  Standard temperature is 59 degrees.
-     - humidity:  The relative humidity fraction.  Ranges from 0.00 to 1.00, with 0.50 being 50% relative humidity.
-     Standard humidity is 78%
+        - dragCoefficient: The coefficient of drag for a given projectile.
+        - altitude: The altitude above sea level (feet).  Standard altitude is 0 feet above sea level.
+        - barometer: The barometric pressure in inches of mercury (in Hg).  This is not "absolute" pressure, it is the "standardized" pressure reported in the papers and news. Standard pressure is 29.53 in Hg.
+        - temperature:  The temperature (Fahrenheit).  Standard temperature is 59 degrees.
+        - humidity:  The relative humidity fraction.  Ranges from 0.00 to 1.00, with 0.50 being 50% relative humidity. Standard humidity is 78%
      - Returns:
-     A ballistic coefficient corrected for the supplied atmospheric conditions.
+     Ballistic coefficient corrected for the supplied atmospheric conditions.
      */
-    func atmosphericCorrection(dragCoefficient: Double, altitude: Double, barometer: Double, temperature: Double, humidity: Double) -> Double {
+    open func atmosphericCorrection(dragCoefficient: Double, altitude: Double, barometer: Double, temperature: Double, humidity: Double) -> Double {
         
         let FA: Double = calcFA(altitude: altitude)
         let FT: Double = calcFT(temperature: temperature, altitude: altitude)
@@ -368,30 +372,64 @@ class GNUBallisticsSwift {
      Computes the windage deflection for a given crosswind speed.
      
      - Parameters:
-     - windSpeed: The wind velocity in mi/hr.
-     - Vi: The initial velocity of the projectile (muzzle velocity).
-     - range: The range at which you wish to determine windage, in feet.
-     - time: The time it has taken the projectile to traverse the range x, in seconds.
+        - windSpeed: The wind velocity (miles per hour).
+        - Vi: The initial velocity of the projectile (feet per second).
+        - range: The range at which you wish to determine windage (feet).
+        - time: The time it has taken the projectile to traverse the range x (seconds).
      - Returns:
-     The windage correction required to achieve zero on a target at the given range (in inches).
+     The windage correction required to achieve zero on a target at the given range (inches).
      */
-    func windage(windSpeed: Double, Vi: Double, range: Double, time: Double) -> Double {
+    open func windage(windSpeed: Double, Vi: Double, range: Double, time: Double) -> Double {
         let Vw: Double = windSpeed * 17.60 // Convert to inches per second.
         return (Vw * (time - range / Vi))
     }
     
-    func headWind(windSpeed: Double, windAngle: Double) -> Double {
+    /**
+     Calculates the headwind component of a wind speed and angle combination.
+     
+     - Parameters:
+        - windSpeed: wind velocity (miles per hour).
+        - windAngle: The angle from which the wind is coming (degrees). 0 degrees is from straight ahead. 90 degrees is from right to left. 180 degrees is from directly behind. 270 or -90 degrees is from left to right.
+     - Returns:
+     Headwind component in miles per hour.
+     */
+    open func headWind(windSpeed: Double, windAngle: Double) -> Double {
         let Wangle: Double = radians(degrees: windAngle)
         return (cos(Wangle) * windSpeed)
     }
     
-    func crossWind(windSpeed: Double, windAngle: Double) -> Double {
+    /**
+     Calculates the crosswind component of a wind speed and angle combination.
+     
+     - Parameters:
+        - windSpeed: wind velocity (miles per hour).
+        - windAngle: The angle from which the wind is coming (degrees). 0 degrees is from straight ahead. 90 degrees is from right to left. 180 degrees is from directly behind. 270 or -90 degrees is from left to right.
+     - Returns:
+     Crosswind component in miles per hour.
+     */
+    open func crossWind(windSpeed: Double, windAngle: Double) -> Double {
         let Wangle: Double = radians(degrees: windAngle)
         return (sin(Wangle) * windSpeed)
         
     }
     
-    func zeroAngle(dragFunction: DragFunction, dragCoefficient: Double, Vi: Double,
+    /**
+     Determines the bore angle needed to achieve a target zero at range. (at standard conditions and on level ground)
+     
+     - Parameters:
+        - dragFunction: The drag function to use (G1, G2, G3, G5, G6, G7, G8)
+        - dragCoefficient: The coefficient of drag for the projectile, for the supplied drag function.
+        - Vi: The initial velocity of the projectile.  (feet per second)
+        - sightHeight: The height of the sighting system above the bore centerline. (inches)
+                       Most scopes fall in the 1.6 to 2.0 inch range.
+        - zeroRange: The range  at which you wish the projectile to intersect yIntercept. (yards)
+        - yIntercept: The height you wish for the projectile to be when it crosses ZeroRange. (inches)
+                     This is usually 0 for a target zero, but could be any number.  For example if you wish
+                     to sight your rifle in 1.5" high at 100 yds, then you would set yIntercept to 1.5, and ZeroRange to 100
+     - Returns:
+         Angle of the bore relative to the sighting system. (degrees)
+     */
+    open func zeroAngle(dragFunction: DragFunction, dragCoefficient: Double, Vi: Double,
                    sightHeight: Double, zeroRange: Double, yIntercept: Double) -> Double {
         // Numerical Integration variables
         var t: Double = 0
@@ -480,7 +518,31 @@ class GNUBallisticsSwift {
         return degrees(radians: angle) // Convert to degrees for return value.
     }
     
-    func solveAll(dragFunction: DragFunction, dragCoefficient: Double, Vi: Double,
+    /**
+     Generate a ballistic solution table in 1 yard increments, up to kMaxRange.  Stored in solutions array.
+     
+     - Parameters:
+        - dragFunction: The drag function you wish to use for the solution (G1, G2, G3, G5, G6, G7, or G8)
+        - dragCoefficient: The coefficient of drag for the projectile you wish to model.
+        - Vi: The projectile initial velocity. (feet per second)
+        - sightHeight:  The height of the sighting system above the bore centerline. (inches)
+                         Most scopes are in the 1.5"-2.0" range.
+        - shootingAngle:  The uphill or downhill shooting angle. (degrees)  Usually 0, but can be anything from
+                         90 (directly up), to -90 (directly down).
+        - zeroAngle:  The angle of the sighting system relative to the bore. (degrees)  This can be easily computed
+                     using the zeroAngle() function.
+        - windSpeed:  The wind velocity. (miles per hour)
+        - windAngle:  The angle at which the wind is approaching from, in degrees.
+                     0 degrees is a straight headwind
+                     90 degrees is from right to left
+                     180 degrees is a straight tailwind
+                     -90 or 270 degrees is from left to right.
+     - Returns:
+                     A Double  representing the maximum valid range of the
+                     solution.  This also indicates the maximum number of rows in the solutions collection,
+                     and should not be exceeded.
+    */
+    open func solveAll(dragFunction: DragFunction, dragCoefficient: Double, Vi: Double,
                   sightHeight: Double, shootingAngle: Double, zeroAngle: Double,
                   windSpeed: Double, windAngle: Double) -> Double {
         solutions = []
