@@ -345,25 +345,25 @@ open class GNUBallisticsSwift {
         return dragCoefficient * CD
     }
     
-    private func calcFR(temperature: Double, pressure: Double, humidity: Double) -> Double {
+    internal func calcFR(temperature: Double, pressure: Double, humidity: Double) -> Double {
         let VPw: Double = 4e-6*pow(temperature,3) - 0.0004*pow(temperature,2)+0.0234*temperature-0.2517
         let FRH: Double = 0.995*(pressure/(pressure-(0.3783)*(humidity)*VPw))
         return FRH
     }
     
-    private func calcFP(pressure: Double) -> Double {
+    internal func calcFP(pressure: Double) -> Double {
         let Pstd: Double = 29.53 // in-hg
         let FP: Double =  (pressure - Pstd)/(Pstd)
         return FP
     }
     
-    private func calcFT(temperature: Double, altitude: Double) -> Double {
+    internal func calcFT(temperature: Double, altitude: Double) -> Double {
         let Tstd: Double = -0.0036 * altitude + 59
         let FT: Double = (temperature - Tstd) / (459.6 + Tstd)
         return FT
     }
     
-    private func calcFA(altitude: Double) -> Double {
+    internal func calcFA(altitude: Double) -> Double {
         let FA: Double = -4e-15 * pow(altitude,3) + 4e-10 * pow(altitude,2) - 3e-5 * altitude + 1
         return (1/FA)
     }
@@ -608,29 +608,31 @@ open class GNUBallisticsSwift {
     }
     
     // MARK: - Helpers
-    private func degrees(radians: Double) -> Double {
-        //        return radians * 180 / Double.pi
-        return radians * 57.295779513082320876798154814105
+    let radiansToDegreesConversionFactor: Double = 180.0 / Double.pi
+    internal func degrees(radians: Double) -> Double {
+        return radians * radiansToDegreesConversionFactor
     }
     
-    private func moa(degrees: Double) -> Double {
+    internal func moa(degrees: Double) -> Double {
         return degrees * 60.0
     }
     
-    private func radians(degrees: Double) -> Double {
-        //        return degrees * Double.pi / 180
-        return degrees * 0.01745329251994329576923690768489
+    let degreesToRadiansConversionFactor: Double = Double.pi / 180.0
+    internal func radians(degrees: Double) -> Double {
+        return degrees * degreesToRadiansConversionFactor
     }
     
-    private func degrees(moa: Double) -> Double {
+    internal func degrees(moa: Double) -> Double {
         return moa / 60.0
     }
-    
-    private func radians(moa: Double) -> Double {
-        return moa * 0.00029088820866572159615394846141477
+
+    let moaToRadiansConversionFactor: Double = Double.pi / (180.0 * 60.0)
+    internal func radians(moa: Double) -> Double {
+        return moa * moaToRadiansConversionFactor
     }
     
-    private func moa(radians: Double) -> Double {
-        return radians * 3437.7467707849392526078892888463
+    let radiansToMOAConversionFactor: Double = (180.0 * 60.0) / Double.pi
+    internal func moa(radians: Double) -> Double {
+        return radians * radiansToMOAConversionFactor
     }
 }
