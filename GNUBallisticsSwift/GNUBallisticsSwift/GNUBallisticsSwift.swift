@@ -22,7 +22,7 @@ struct Solution {
 open class GNUBallisticsSwift {
     
     let kMaxRange: Double = 50001
-    let kGravity: Double = -32.194
+    let kGravity: Double = -32.1740
     
     var solutions: [Solution]? = nil
     var solved: Bool {
